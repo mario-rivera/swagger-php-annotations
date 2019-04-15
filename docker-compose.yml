@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+
+  swagger:
+    image: swaggerapi/swagger-ui:v3.22.1
+    volumes:
+      - ./swagger:/code
+    ports:
+      - "8001:8080"
+    environment:
+      SWAGGER_JSON: /code/${SWAGGER_FILENAME}
+
+  docs:
+    image: php:7.1-cli
+    working_dir: /code
+    volumes:
+      - .:/code
+    environment:
+      YAML_TARGET: /code/swagger/${SWAGGER_FILENAME}
+      PROJECT_PATH: /code/src
+    command: bash /code/docker/shell/docs-command.sh
+
+  composer:
+    image: composer:1.6
+    working_dir: /code
+    volumes:
+      - .:/code
+    command: composer install -n --ignore-platform-reqs --no-scripts
+
+networks:
+  default:
+    name: ${DOCKER_DEFAULT_NETWORK}
